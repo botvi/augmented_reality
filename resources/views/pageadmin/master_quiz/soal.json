@@ -1,0 +1,24 @@
+[
+    {
+        "gambar": "uploads/soal-gambar/2.jpg",
+        "jawaban": "a",
+        "pilihan": {
+            "a": "aa",
+            "b": "bb",
+            "c": "cc",
+            "d": "dd"
+        },
+        "pertanyaan": "Tester"
+    },
+    {
+        "gambar": null,
+        "jawaban": "c",
+        "pilihan": {
+            "a": "aaa",
+            "b": "bbb",
+            "c": "ccc",
+            "d": "ddd"
+        },
+        "pertanyaan": "tester2"
+    }
+]

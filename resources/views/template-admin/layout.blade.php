@@ -25,8 +25,11 @@
 	<link rel="stylesheet" href="{{ asset('admin') }}/assets/css/dark-theme.css"/>
 	<link rel="stylesheet" href="{{ asset('admin') }}/assets/css/semi-dark.css"/>
 	<link rel="stylesheet" href="{{ asset('admin') }}/assets/css/header-colors.css"/>
+	<!-- Summernote CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.css" rel="stylesheet">
+	
     @yield('style')
-	<title>Dashboard</title>
+	<title>Dashboard - AR Cerdas</title>
 </head>
 
 <body>
@@ -34,12 +37,10 @@
     <div class="wrapper">
         <!--sidebar wrapper -->
         <div class="sidebar-wrapper" data-simplebar="true">
-            <div class="sidebar-header">
+			<div class="sidebar-header">
 				<div>
-					{{-- <img src="{{ asset('env') }}/logotangkas.png" class="logo-icon" alt="logo icon"> --}}
-				</div>
-				<div>
-					<h4 class="logo-text">Dashboard</h4>
+					<img src="{{ asset('env') }}/logo_text.png" class="logo-text" alt="logo icon" style="width: 180px;">
+					<img src="{{ asset('env') }}/logo.png" class="logo-icon" alt="logo icon" style="width: 40px; display: none;">
 				</div>
 				<div class="toggle-icon ms-auto"><i class='bx bx-arrow-to-left'></i>
 				</div>
@@ -343,8 +344,8 @@
 							<img src="https://cdn-icons-png.flaticon.com/512/9187/9187604.png" class="user-img" alt="user avatar">
 						
 							<div class="user-info ps-3">
-									<p class="user-name mb-0">Guest</p>
-									<p class="designation mb-0">Not Logged In</p>
+									<p class="user-name mb-0"><span>@</span>{{ Auth::user()->username }}</p>
+									<p class="designation mb-0"><span class="badge bg-primary">{{ Auth::user()->role }}</span></p>
 							</div>
 						</a>
 						
@@ -385,7 +386,7 @@
     <!--start switcher-->
 
     <!--end switcher-->
-    {{-- @include('sweetalert::alert') --}}
+    @include('sweetalert::alert')
 
     @yield('script')
 
@@ -407,6 +408,23 @@
     {{-- UPLOAD --}}
     <script src="{{ asset('admin') }}/assets/plugins/Drag-And-Drop/dist/imageuploadify.min.js"></script>
 
+    <!-- Summernote JS -->
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs4.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.summernote').summernote({
+                height: 200,
+                toolbar: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear', 'fontsize']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['insert', ['link']],
+                    ['view', ['fullscreen', 'codeview', 'help']]
+                ]
+            });
+        });
+    </script>
 
     <script src="{{ asset('admin') }}/assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
 	<script src="{{ asset('admin') }}/assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
