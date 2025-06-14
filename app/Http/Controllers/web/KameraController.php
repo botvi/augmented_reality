@@ -10,22 +10,15 @@ class KameraController extends Controller
 {
     public function index()
     {
-        $ar = AugmentedReality::first();
-        if (!$ar) {
+        $ar_list = AugmentedReality::with('materi')->get();
+        
+        if ($ar_list->isEmpty()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Tidak ada data AR yang tersedia'
             ]);
         }
 
-        $materi_ar = Materi::where('ar_id', $ar->id)->first();
-        if (!$materi_ar) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Tidak ada data materi yang tersedia'
-            ]);
-        }
-
-        return view('pageweb.kamera', compact('ar', 'materi_ar'));
+        return view('pageweb.kamera', compact('ar_list'));
     }
 }

@@ -156,13 +156,7 @@
         <div class="modal-content">
             <span class="close-modal" id="closeModal">&times;</span>
             <div id="materiContent">
-                @if($materi_ar)
-                <img src="{{ asset('/' . $materi_ar->gambar) }}" alt="Gambar" style="width: 40%; height: 40%; display: block; margin: 0 auto; border-radius: 10px;">
-                <h3>{{ $materi_ar->judul_materi }}</h3>
-                <div>{!! $materi_ar->materi !!}</div>
-                @else
                 <h3>Tidak ada materi yang tersedia</h3>
-                @endif
             </div>
         </div>
     </div>
@@ -174,62 +168,65 @@
     </div>
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
-        <a-marker type="pattern" url="{{ asset('pattern/' . $ar->pattern_pattern) }}" emitevents="true" id="marker">
-            <a-entity id="model"
+        @foreach($ar_list as $ar)
+        <a-marker type="pattern" url="{{ asset('pattern/' . $ar->pattern_pattern) }}" emitevents="true" id="marker-{{ $ar->id }}">
+            <a-entity id="model-{{ $ar->id }}"
                       gltf-model="{{ asset('objek_3d/' . $ar->objek_3d) }}"
                       position="0 0 0"
                       scale="1 1 1"
                       rotation="0 180 0">
             </a-entity>
         </a-marker>
+        @endforeach
         <a-entity camera></a-entity>
     </a-scene>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            // Cek response dari controller
-            fetch(window.location.href)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'error') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Oops...',
-                            text: data.message,
-                            confirmButtonText: 'Kembali',
-                            allowOutsideClick: false
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.history.back();
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    // Jika response bukan JSON, berarti halaman normal
-                    console.log('Halaman normal');
-                });
-
-            const model = document.getElementById("model");
             const loading = document.getElementById("loading");
-            const marker = document.getElementById("marker");
             const materiButton = document.getElementById("materiButton");
             const materiModal = document.getElementById("materiModal");
             const closeModal = document.getElementById("closeModal");
-            let scaleFactor = 1.0;
-            let initialScale = 1.0;
-            let lastX, lastY;
-            let isRotating = false;
+            const materiContent = document.getElementById("materiContent");
+            let currentMateri = null;
             
-            // Event listener untuk marker
-            marker.addEventListener('markerFound', function() {
-                materiButton.style.display = 'block';
+            // Data AR dari server
+            const arData = @json($ar_list);
+            
+            // Event listener untuk setiap marker
+            arData.forEach(ar => {
+                const marker = document.getElementById(`marker-${ar.id}`);
+                const model = document.getElementById(`model-${ar.id}`);
+                
+                marker.addEventListener('markerFound', function() {
+                    materiButton.style.display = 'block';
+                    currentMateri = ar.materi;
+                    updateMateriContent();
+                });
+
+                marker.addEventListener('markerLost', function() {
+                    materiButton.style.display = 'none';
+                    materiModal.style.display = 'none';
+                    currentMateri = null;
+                });
+
+                // Sembunyikan loading setelah model dimuat
+                model.addEventListener('model-loaded', function() {
+                    loading.style.display = 'none';
+                });
             });
 
-            marker.addEventListener('markerLost', function() {
-                materiButton.style.display = 'none';
-                materiModal.style.display = 'none';
-            });
+            function updateMateriContent() {
+                if (currentMateri) {
+                    materiContent.innerHTML = `
+                        <img src="/${currentMateri.gambar}" alt="Gambar" style="width: 40%; height: 40%; display: block; margin: 0 auto; border-radius: 10px;">
+                        <h3>${currentMateri.judul_materi}</h3>
+                        <div>${currentMateri.materi}</div>
+                    `;
+                } else {
+                    materiContent.innerHTML = '<h3>Tidak ada materi yang tersedia</h3>';
+                }
+            }
 
             // Event listener untuk modal
             materiButton.addEventListener('click', function() {
@@ -245,84 +242,42 @@
                     materiModal.style.display = 'none';
                 }
             });
-            
-            // Sembunyikan loading setelah model dimuat
-            model.addEventListener('model-loaded', function() {
-                loading.style.display = 'none';
-            });
-            
-            // Fungsi untuk mengatur skala dengan animasi smooth
-            function setScale(newScale) {
-                scaleFactor = Math.max(0.5, Math.min(3.0, newScale));
-                model.setAttribute("scale", `${scaleFactor} ${scaleFactor} ${scaleFactor}`);
-            }
 
-            // Kontrol tombol
-            document.getElementById("zoomIn").addEventListener("click", () => setScale(scaleFactor + 0.25));
-            document.getElementById("zoomOut").addEventListener("click", () => setScale(scaleFactor - 0.25));
-            document.getElementById("resetView").addEventListener("click", () => {
-                setScale(initialScale);
-                model.setAttribute("rotation", "0 180 0");
+            // Zoom controls
+            const zoomIn = document.getElementById('zoomIn');
+            const zoomOut = document.getElementById('zoomOut');
+            const resetView = document.getElementById('resetView');
+
+            zoomIn.addEventListener('click', function() {
+                arData.forEach(ar => {
+                    const model = document.getElementById(`model-${ar.id}`);
+                    const currentScale = model.getAttribute('scale');
+                    model.setAttribute('scale', {
+                        x: currentScale.x * 1.2,
+                        y: currentScale.y * 1.2,
+                        z: currentScale.z * 1.2
+                    });
+                });
             });
 
-            // Rotasi dengan touch/mouse
-            document.addEventListener("pointerdown", (e) => {
-                isRotating = true;
-                lastX = e.clientX;
-                lastY = e.clientY;
+            zoomOut.addEventListener('click', function() {
+                arData.forEach(ar => {
+                    const model = document.getElementById(`model-${ar.id}`);
+                    const currentScale = model.getAttribute('scale');
+                    model.setAttribute('scale', {
+                        x: currentScale.x * 0.8,
+                        y: currentScale.y * 0.8,
+                        z: currentScale.z * 0.8
+                    });
+                });
             });
 
-            document.addEventListener("pointermove", (e) => {
-                if (!isRotating) return;
-                
-                const deltaX = e.clientX - lastX;
-                const rotation = model.getAttribute("rotation");
-                rotation.y += deltaX * 0.5;
-                model.setAttribute("rotation", rotation);
-                
-                lastX = e.clientX;
-                lastY = e.clientY;
-            });
-
-            document.addEventListener("pointerup", () => {
-                isRotating = false;
-            });
-            document.addEventListener("pointercancel", () => {
-                isRotating = false;
-            });
-
-            // Zoom dengan pinch/wheel
-            let lastPinchDistance = null;
-            
-            document.addEventListener("wheel", (e) => {
-                e.preventDefault();
-                setScale(scaleFactor + (e.deltaY * -0.002));
-            });
-
-            document.addEventListener("touchstart", (e) => {
-                if (e.touches.length === 2) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    lastPinchDistance = Math.sqrt(dx * dx + dy * dy);
-                }
-            });
-
-            document.addEventListener("touchmove", (e) => {
-                if (e.touches.length === 2) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (lastPinchDistance !== null) {
-                        const delta = (distance - lastPinchDistance) * 0.003;
-                        setScale(scaleFactor + delta);
-                    }
-                    lastPinchDistance = distance;
-                }
-            });
-
-            document.addEventListener("touchend", () => {
-                lastPinchDistance = null;
+            resetView.addEventListener('click', function() {
+                arData.forEach(ar => {
+                    const model = document.getElementById(`model-${ar.id}`);
+                    model.setAttribute('scale', '1 1 1');
+                    model.setAttribute('rotation', '0 180 0');
+                });
             });
         });
     </script>
