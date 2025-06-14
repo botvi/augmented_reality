@@ -171,7 +171,7 @@
     </div>
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
-        <a-marker type="pattern" preset="hiro" url="{{ asset('pattern/' . $ar->pattern_pattern) }}" emitevents="true" id="marker">
+        <a-marker type="pattern" url="{{ asset('pattern/' . $ar->pattern_pattern) }}" emitevents="true" id="marker">
             <a-entity id="model"
                       gltf-model="{{ asset('objek_3d/' . $ar->objek_3d) }}"
                       position="0 0 0"

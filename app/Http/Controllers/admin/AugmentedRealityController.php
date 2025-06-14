@@ -87,8 +87,8 @@ class AugmentedRealityController extends Controller
 
         if ($request->hasFile('pattern_pattern')) {
             // Hapus file pattern lama jika ada
-            if ($data->pattern && file_exists(public_path('pattern/' . $data->pattern))) {
-                unlink(public_path('pattern/' . $data->pattern));
+            if ($data->pattern_pattern && file_exists(public_path('pattern/' . $data->pattern_pattern))) {
+                unlink(public_path('pattern/' . $data->pattern_pattern));
             }
             
             $filePattern = $request->file('pattern_pattern');
@@ -116,7 +116,7 @@ class AugmentedRealityController extends Controller
         }
 
         if ($request->hasFile('pattern_pattern')) {
-            $updateData['pattern'] = $filenamePattern;
+            $updateData['pattern_pattern'] = $filenamePattern;
         }
 
         if ($request->hasFile('pattern_image')) {
@@ -139,8 +139,8 @@ class AugmentedRealityController extends Controller
         }
         
         // Hapus file pattern
-        if ($data->pattern && file_exists(public_path('pattern/' . $data->pattern))) {
-            unlink(public_path('pattern/' . $data->pattern));
+        if ($data->pattern_pattern && file_exists(public_path('pattern/' . $data->pattern_pattern))) {
+            unlink(public_path('pattern/' . $data->pattern_pattern));
         }
 
         // Hapus file pattern image

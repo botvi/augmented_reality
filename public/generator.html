@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AR.js Marker Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsartoolkit5@1.5.2/build/artoolkit.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsartoolkit5@1.5.2/js/artoolkit.api.js"></script>
+  <style>
+    body { font-family: Arial; text-align: center; margin: 2rem; }
+    #markerPreview { border: 1px solid #ccc; margin: 1rem auto; }
+  </style>
+</head>
+<body>
+  <h1>AR.js Marker Generator</h1>
+  <input type="file" id="imageInput" accept="image/*"><br><br>
+  <canvas id="markerPreview" width="512" height="512"></canvas><br>
+  <button onclick="generateMarker()">Generate .patt File</button><br><br>
+  <a id="downloadPatt" href="#" download="marker.patt" style="display:none;">Download .patt File</a>
+  <br><br>
+  <a id="downloadPng" href="#" download="marker.png" style="display:none;">Download PNG Marker</a>
+
+  <script>
+    const canvas = document.getElementById('markerPreview');
+    const ctx = canvas.getContext('2d');
+    const input = document.getElementById('imageInput');
+
+    let image = new Image();
+
+    input.addEventListener('change', function (e) {
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        image.onload = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          document.getElementById('downloadPng').href = canvas.toDataURL();
+          document.getElementById('downloadPng').style.display = 'inline-block';
+        };
+        image.src = event.target.result;
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    });
+
+    function generateMarker() {
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const markerId = artoolkit.generateMarkerImage(imgData.data, canvas.width, canvas.height);
+
+      if (markerId !== -1) {
+        const pattern = artoolkit.getMarkerPattern(markerId);
+        const blob = new Blob([pattern], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.getElementById('downloadPatt');
+        link.href = url;
+        link.style.display = 'inline-block';
+      } else {
+        alert("Gagal membuat marker. Pastikan gambar cukup kontras dan jelas.");
+      }
+    }
+  </script>
+</body>
+</html>
