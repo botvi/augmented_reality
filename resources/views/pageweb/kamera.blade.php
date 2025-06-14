@@ -9,6 +9,9 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/ar.js@latest/aframe/build/aframe-ar.min.js"></script>
     
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
 
@@ -184,6 +187,29 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Cek response dari controller
+            fetch(window.location.href)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'error') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: data.message,
+                            confirmButtonText: 'Kembali',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.history.back();
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    // Jika response bukan JSON, berarti halaman normal
+                    console.log('Halaman normal');
+                });
+
             const model = document.getElementById("model");
             const loading = document.getElementById("loading");
             const marker = document.getElementById("marker");
