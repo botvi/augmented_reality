@@ -18,7 +18,8 @@ class KameraController extends Controller
                 'message' => 'Tidak ada data AR yang tersedia'
             ]);
         }
+        $materi = Materi::all();
 
-        return view('pageweb.kamera', compact('ar_list'));
+        return view('pageweb.kamera', compact('ar_list', 'materi'));
     }
 }
